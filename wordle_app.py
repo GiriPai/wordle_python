@@ -19,21 +19,45 @@ def validate_guess(guess: str, length: int):
     return False
 
 
-def process_word(init_word: str, guess: str):
-    if init_word == guess:
-        print(white_on_green(guess))
+def find_all_char_positions(word: str, char: str):
+    positions = []
+    pos = word.find(char)
+    while pos != -1:
+        positions.append(pos)
+        pos = word.find(char, pos + 1)
+    return positions
+
+
+def compare(expected: str, guess: str):
+    output = ["_"] * len(expected)
+    counted_pos = set()
+
+    if (expected == guess):
         return True
 
-    colored_str = ''
-    for idx, letter in enumerate(guess):
-        if guess[idx] == init_word[idx]:
-            colored_str += white_on_green(guess[idx])
-        elif guess[idx] in init_word:
-            colored_str += white_on_yellow(guess[idx])
-        else:
-            colored_str += black_on_gray(guess[idx])
+    for index, (expected_char, guess_char) in enumerate(zip(expected, guess)):
+        if (expected_char == guess_char):
+            output[index] = "*"
+            counted_pos.add(index)
 
-    print(colored_str)
+    for index, guess_char in enumerate(guess):
+        if guess_char in expected and output[index] != "*":
+            positions = find_all_char_positions(word=expected, char=guess_char)
+            for pos in positions:
+                if pos not in counted_pos:
+                    output[index] = "-"
+                    counted_pos.add(pos)
+                    break
+
+    coloured = ""
+    for idx, i in enumerate(output):
+        if i == '*':
+            coloured += white_on_green(guess[idx])
+        elif i == "-":
+            coloured += white_on_yellow(guess[idx])
+        else:
+            coloured += white_on_black(guess[idx])
+    print(coloured)
     return False
 
 
@@ -57,7 +81,8 @@ def play():
         count += 1
 
         # Process Wordle
-        if process_word(init_word, guess) == True:
+
+        if compare(init_word, guess) == True:
             is_gessed_correctly = True
             print('Congratulations!!! You\'ve guessed it right... ')
             break
